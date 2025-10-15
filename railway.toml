@@ -1,0 +1,8 @@
+[build]
+nixPackages = ["nodejs-20_x", "python3"]
+nixOverlays = ["https://github.com/railwayapp/nix-npm-overlay/archive/main.tar.gz"]
+
+[deploy]
+startCommand = "bash railway-start.sh"
+healthcheckPath = "/up"
+healthcheckTimeout = 300
