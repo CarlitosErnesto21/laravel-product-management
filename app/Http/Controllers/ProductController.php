@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 use Inertia\Inertia;
 use Cloudinary\Cloudinary;
+use Exception;
 use GuzzleHttp\Client;
 
 class ProductController extends Controller
@@ -39,7 +41,7 @@ class ProductController extends Controller
                 'message' => 'Conexión exitosa con Cloudinary',
                 'data' => $result
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error conectando con Cloudinary: ' . $e->getMessage(),
@@ -66,7 +68,7 @@ class ProductController extends Controller
                 'url' => $uploadResult['secure_url'],
                 'public_id' => $uploadResult['public_id']
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Fallo Cloudinary, usando almacenamiento local: ' . $e->getMessage());
 
             // Fallback a almacenamiento local
@@ -129,19 +131,19 @@ class ProductController extends Controller
         if (curl_error($ch)) {
             $error = curl_error($ch);
             curl_close($ch);
-            throw new \Exception("cURL Error: " . $error);
+            throw new Exception("cURL Error: " . $error);
         }
 
         curl_close($ch);
 
         if ($httpCode !== 200) {
-            throw new \Exception("HTTP Error: " . $httpCode . " Response: " . $response);
+            throw new Exception("HTTP Error: " . $httpCode . " Response: " . $response);
         }
 
         $result = json_decode($response, true);
 
         if (!$result || !isset($result['secure_url'])) {
-            throw new \Exception("Invalid response from Cloudinary: " . $response);
+            throw new Exception("Invalid response from Cloudinary: " . $response);
         }
 
         return $result;
@@ -164,7 +166,18 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->get();
+        try {
+            $products = Product::latest()->get();
+        } catch (Exception $e) {
+            // Si las tablas no existen, ejecutar migraciones
+            try {
+                Artisan::call('migrate', ['--force' => true]);
+                $products = Product::latest()->get();
+            } catch (Exception $e2) {
+                // Si aún falla, mostrar productos vacíos
+                $products = collect([]);
+            }
+        }
 
         return Inertia::render('Products/Index', [
             'products' => $products
@@ -308,7 +321,7 @@ class ProductController extends Controller
                     Log::info('Imagen local eliminada: ' . $fullPath);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Error eliminando imagen: ' . $e->getMessage());
             // No lanzar excepción para no interrumpir la eliminación del producto
         }
@@ -359,19 +372,19 @@ class ProductController extends Controller
         if (curl_error($ch)) {
             $error = curl_error($ch);
             curl_close($ch);
-            throw new \Exception("cURL Error eliminando imagen: " . $error);
+            throw new Exception("cURL Error eliminando imagen: " . $error);
         }
 
         curl_close($ch);
 
         if ($httpCode !== 200) {
-            throw new \Exception("HTTP Error eliminando imagen: " . $httpCode . " Response: " . $response);
+            throw new Exception("HTTP Error eliminando imagen: " . $httpCode . " Response: " . $response);
         }
 
         $result = json_decode($response, true);
 
         if (!$result || $result['result'] !== 'ok') {
-            throw new \Exception("Error en respuesta de Cloudinary: " . $response);
+            throw new Exception("Error en respuesta de Cloudinary: " . $response);
         }
 
         return $result;
