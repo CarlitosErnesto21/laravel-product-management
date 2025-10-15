@@ -50,18 +50,4 @@ else
     echo "✅ APP_KEY encontrada"
 fi
 
-# Ejecutar migraciones
-echo "🗃️ Ejecutando migraciones..."
-php artisan migrate --force || echo "⚠️ Error en migraciones, continuando..."
-
-# Crear enlace simbólico para storage
-echo "🔗 Creando enlace simbólico para storage..."
-php artisan storage:link || echo "⚠️ Storage link ya existe o error, continuando..."
-
-# Cachear configuraciones para producción
-echo "⚡ Cacheando configuraciones..."
-php artisan config:cache
-php artisan route:cache || echo "⚠️ Error en route cache, continuando..."
-php artisan view:cache
-
 echo "✅ Build completado exitosamente!"

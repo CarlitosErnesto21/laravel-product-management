@@ -1,8 +1,11 @@
 {
-  "scripts": {
-    "build": "vite build"
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
   },
-  "engines": {
-    "node": "18.x"
+  "deploy": {
+    "startCommand": "bash railway-start.sh",
+    "healthcheckPath": "/up",
+    "healthcheckTimeout": 300
   }
 }
