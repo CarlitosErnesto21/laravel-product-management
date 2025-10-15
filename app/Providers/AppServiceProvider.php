@@ -39,14 +39,30 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configurar base de datos para Railway (variables ya están configuradas por Railway)
+     * Configurar base de datos para Railway usando las variables que Railway proporciona
      */
     private function configureDatabaseFromUrl(): void
     {
-        // Railway ya proporciona las variables individuales, no necesitamos parsear DATABASE_URL
-        // Solo asegurémonos de que la conexión por defecto sea mysql en producción
         if (config('app.env') === 'production') {
-            config(['database.default' => 'mysql']);
+            // Railway proporciona estas variables específicas
+            $mysqlUrl = env('DATABASE_URL');
+
+            if ($mysqlUrl) {
+                $parsedUrl = parse_url($mysqlUrl);
+
+                // Configurar la conexión MySQL con los datos parseados de DATABASE_URL
+                config([
+                    'database.default' => 'mysql',
+                    'database.connections.mysql.host' => $parsedUrl['host'] ?? env('DB_HOST'),
+                    'database.connections.mysql.port' => $parsedUrl['port'] ?? env('DB_PORT', 3306),
+                    'database.connections.mysql.database' => ltrim($parsedUrl['path'], '/') ?? env('DB_DATABASE'),
+                    'database.connections.mysql.username' => $parsedUrl['user'] ?? env('DB_USERNAME'),
+                    'database.connections.mysql.password' => $parsedUrl['pass'] ?? env('DB_PASSWORD'),
+                ]);
+            } else {
+                // Fallback a las variables individuales
+                config(['database.default' => 'mysql']);
+            }
         }
     }    /**
      * Configurar opciones HTTP por defecto para desarrollo local
