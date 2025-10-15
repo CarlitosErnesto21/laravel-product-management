@@ -22,10 +22,34 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        // Configurar la base de datos desde DATABASE_URL si existe (Railway)
+        $this->configureDatabaseFromUrl();
+
         // Configurar opciones cURL globales para SSL en Windows
         if (config('app.env') === 'local') {
             // Configurar Guzzle HTTP globalmente
             $this->configureHttpDefaults();
+        }
+    }
+
+    /**
+     * Configurar base de datos desde DATABASE_URL para Railway
+     */
+    private function configureDatabaseFromUrl(): void
+    {
+        $databaseUrl = env('DATABASE_URL');
+
+        if ($databaseUrl) {
+            $url = parse_url($databaseUrl);
+
+            if ($url) {
+                putenv("DB_CONNECTION=mysql");
+                putenv("DB_HOST={$url['host']}");
+                putenv("DB_PORT=" . ($url['port'] ?? 3306));
+                putenv("DB_DATABASE=" . ltrim($url['path'], '/'));
+                putenv("DB_USERNAME={$url['user']}");
+                putenv("DB_PASSWORD={$url['pass']}");
+            }
         }
     }
 
