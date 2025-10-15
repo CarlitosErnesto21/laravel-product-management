@@ -26,6 +26,15 @@ class InitializeApp extends Command
             $this->warn('⚠️ Error limpiando caches: ' . $e->getMessage());
         }
 
+        // Debug configuración de base de datos
+        $this->info('🔍 Verificando configuración de base de datos...');
+        $this->line('DB_CONNECTION: ' . env('DB_CONNECTION', 'not set'));
+        $this->line('DB_HOST: ' . env('DB_HOST', 'not set'));
+        $this->line('DB_PORT: ' . env('DB_PORT', 'not set'));
+        $this->line('DB_DATABASE: ' . env('DB_DATABASE', 'not set'));
+        $this->line('DB_USERNAME: ' . env('DB_USERNAME', 'not set'));
+        $this->line('Default connection: ' . config('database.default'));
+
         // Ejecutar migraciones
         $this->info('🗃️ Ejecutando migraciones...');
         try {
