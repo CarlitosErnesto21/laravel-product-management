@@ -22,7 +22,9 @@ import {
     faShoppingCart,
     faCheck,
     faArrowDown,
-    faChevronDown
+    faChevronDown,
+    faBars,
+    faTimes
 } from '@fortawesome/free-solid-svg-icons';
 
 // Agregar iconos a la librería
@@ -42,7 +44,9 @@ library.add(
     faShoppingCart,
     faCheck,
     faArrowDown,
-    faChevronDown
+    faChevronDown,
+    faBars,
+    faTimes
 );
 
 createInertiaApp({
