@@ -28,12 +28,31 @@ chmod -R 755 storage bootstrap/cache public
 echo "🔍 Configurando drivers para máxima estabilidad..."
 echo "📁 Usando file drivers para sesiones y cache (más estable)"
 
-# Probar conexión específica a MySQL
-echo "🔍 Probando conexión MySQL específica..."
+# Detectar y configurar variables de MySQL de Railway automáticamente
+echo "🔍 Detectando variables de MySQL de Railway..."
+
+# Railway puede usar diferentes nombres para las variables MySQL
+# Detectar automáticamente las variables correctas
+for var in $(env | grep -i mysql); do
+    echo "Variable MySQL encontrada: $var"
+done
+
+echo "🔍 Variables de base de datos detectadas:"
 echo "DB_HOST: $DB_HOST"
 echo "DB_PORT: $DB_PORT"
 echo "DB_DATABASE: $DB_DATABASE"
 echo "DB_USERNAME: $DB_USERNAME"
+echo "MYSQLHOST: $MYSQLHOST"
+echo "MYSQLPORT: $MYSQLPORT"
+echo "MYSQLDATABASE: $MYSQLDATABASE"
+echo "MYSQLUSER: $MYSQLUSER"
+echo "MYSQL_URL: $MYSQL_URL"
+
+# Si existe MYSQL_URL, intentar parsearla
+if [ ! -z "$MYSQL_URL" ]; then
+    echo "🔗 Parseando MYSQL_URL..."
+    echo "MYSQL_URL: $MYSQL_URL"
+fi
 
 # Intentar conexión directa con mysql si está disponible
 if command -v mysql &> /dev/null; then
