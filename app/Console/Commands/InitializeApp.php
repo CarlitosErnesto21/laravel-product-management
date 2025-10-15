@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 
 class InitializeApp extends Command
 {
@@ -20,27 +19,6 @@ class InitializeApp extends Command
         @mkdir(storage_path('framework/sessions'), 0755, true);
         @mkdir(storage_path('framework/cache'), 0755, true);
         @mkdir(storage_path('framework/views'), 0755, true);
-
-        // Limpiar caches
-        try {
-            Artisan::call('config:clear');
-            Artisan::call('cache:clear');
-            Artisan::call('view:clear');
-            Artisan::call('route:clear');
-        } catch (\Exception $e) {
-            $this->warn('⚠️ Error limpiando caches: ' . $e->getMessage());
-        }
-
-        // Test conexión y migraciones
-        try {
-            DB::connection()->getPdo();
-            $this->info('✅ Base de datos conectada');
-
-            Artisan::call('migrate', ['--force' => true]);
-            $this->info('✅ Migraciones ejecutadas');
-        } catch (\Exception $e) {
-            $this->warn('⚠️ Sin conexión a BD: ' . $e->getMessage());
-        }
 
         // Storage link
         try {
