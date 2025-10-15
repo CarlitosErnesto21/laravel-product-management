@@ -4,89 +4,52 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 
 class InitializeApp extends Command
 {
     protected $signature = 'app:initialize';
-    protected $description = 'Initialize the application for Railway deployment';
+    protected $description = 'Initialize the application for deployment';
 
     public function handle()
     {
         $this->info('🚀 Inicializando aplicación...');
 
-        // Forzar configuraciones seguras
-        putenv('SESSION_DRIVER=file');
-        putenv('CACHE_STORE=file');
-        $this->info('📁 Configuraciones forzadas a file drivers para estabilidad');
+        // Crear directorios necesarios
+        @mkdir(storage_path('logs'), 0755, true);
+        @mkdir(storage_path('framework/sessions'), 0755, true);
+        @mkdir(storage_path('framework/cache'), 0755, true);
+        @mkdir(storage_path('framework/views'), 0755, true);
 
         // Limpiar caches
-        $this->info('🧹 Limpiando caches...');
         try {
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
             Artisan::call('view:clear');
             Artisan::call('route:clear');
-            $this->info('✅ Caches limpiados');
         } catch (\Exception $e) {
             $this->warn('⚠️ Error limpiando caches: ' . $e->getMessage());
         }
 
-        // Debug configuración de base de datos
-        $this->info('🔍 Verificando configuración de base de datos...');
-        $this->line('DB_CONNECTION: ' . env('DB_CONNECTION', 'not set'));
-        $this->line('DB_HOST: ' . env('DB_HOST', 'not set'));
-        $this->line('DB_PORT: ' . env('DB_PORT', 'not set'));
-        $this->line('DB_DATABASE: ' . env('DB_DATABASE', 'not set'));
-        $this->line('DB_USERNAME: ' . env('DB_USERNAME', 'not set'));
-        $this->line('Default connection: ' . config('database.default'));
-        $this->line('SESSION_DRIVER: ' . env('SESSION_DRIVER', 'not set'));
-
-        // Test de conexión DB
-        $this->info('🔌 Probando conexión a base de datos...');
+        // Test conexión y migraciones
         try {
-            \DB::connection()->getPdo();
-            $this->info('✅ Conexión a base de datos exitosa');
+            DB::connection()->getPdo();
+            $this->info('✅ Base de datos conectada');
 
-            // Ejecutar migraciones solo si hay conexión
-            $this->info('🗃️ Ejecutando migraciones...');
             Artisan::call('migrate', ['--force' => true]);
-            $this->info('✅ Migraciones ejecutadas exitosamente');
-            $this->line(Artisan::output());
+            $this->info('✅ Migraciones ejecutadas');
         } catch (\Exception $e) {
-            $this->warn('⚠️ Error de conexión a BD: ' . $e->getMessage());
-            $this->warn('⚠️ La aplicación funcionará con configuración básica');
+            $this->warn('⚠️ Sin conexión a BD: ' . $e->getMessage());
         }
 
-        // Crear storage link
-        $this->info('🔗 Creando enlace de storage...');
+        // Storage link
         try {
             Artisan::call('storage:link');
-            $this->info('✅ Enlace de storage creado');
         } catch (\Exception $e) {
-            $this->warn('⚠️ Storage link ya existe o error: ' . $e->getMessage());
+            // Ignorar si ya existe
         }
 
-        // Cachear configuraciones
-        $this->info('⚡ Cacheando configuraciones...');
-        try {
-            Artisan::call('config:cache');
-            Artisan::call('route:cache');
-            Artisan::call('view:cache');
-            $this->info('✅ Configuraciones cacheadas');
-        } catch (\Exception $e) {
-            $this->warn('⚠️ Error cacheando: ' . $e->getMessage());
-        }
-
-        // Verificar estado de migraciones
-        $this->info('🔍 Verificando estado de migraciones...');
-        try {
-            Artisan::call('migrate:status');
-            $this->line(Artisan::output());
-        } catch (\Exception $e) {
-            $this->warn('⚠️ No se pudo verificar migraciones: ' . $e->getMessage());
-        }
-
-        $this->info('✅ Aplicación inicializada correctamente!');
+        $this->info('✅ Inicialización completada');
         return 0;
     }
 }
