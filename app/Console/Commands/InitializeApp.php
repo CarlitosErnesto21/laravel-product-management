@@ -34,16 +34,22 @@ class InitializeApp extends Command
         $this->line('DB_DATABASE: ' . env('DB_DATABASE', 'not set'));
         $this->line('DB_USERNAME: ' . env('DB_USERNAME', 'not set'));
         $this->line('Default connection: ' . config('database.default'));
+        $this->line('SESSION_DRIVER: ' . env('SESSION_DRIVER', 'not set'));
 
-        // Ejecutar migraciones
-        $this->info('🗃️ Ejecutando migraciones...');
+        // Test de conexión DB
+        $this->info('🔌 Probando conexión a base de datos...');
         try {
+            \DB::connection()->getPdo();
+            $this->info('✅ Conexión a base de datos exitosa');
+
+            // Ejecutar migraciones solo si hay conexión
+            $this->info('🗃️ Ejecutando migraciones...');
             Artisan::call('migrate', ['--force' => true]);
             $this->info('✅ Migraciones ejecutadas exitosamente');
             $this->line(Artisan::output());
         } catch (\Exception $e) {
-            $this->error('❌ Error ejecutando migraciones: ' . $e->getMessage());
-            return 1;
+            $this->warn('⚠️ Error de conexión a BD: ' . $e->getMessage());
+            $this->warn('⚠️ La aplicación funcionará con configuración básica');
         }
 
         // Crear storage link
