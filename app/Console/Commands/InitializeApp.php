@@ -14,6 +14,11 @@ class InitializeApp extends Command
     {
         $this->info('🚀 Inicializando aplicación...');
 
+        // Forzar configuraciones seguras
+        putenv('SESSION_DRIVER=file');
+        putenv('CACHE_STORE=file');
+        $this->info('📁 Configuraciones forzadas a file drivers para estabilidad');
+
         // Limpiar caches
         $this->info('🧹 Limpiando caches...');
         try {
