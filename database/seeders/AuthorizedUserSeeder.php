@@ -13,14 +13,14 @@ class AuthorizedUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $authorizedEmail = 'ernesto.rosales354@gmail.com';
+        $authorizedEmail = 'ernesto@gmail.com';
 
         // Verificar si el usuario ya existe
         $existingUser = User::where('email', $authorizedEmail)->first();
 
         if (!$existingUser) {
             User::create([
-                'name' => 'Carlos Ernesto Arteaga Rosales',
+                'name' => 'Carlos Ernesto Rosales',
                 'email' => $authorizedEmail,
                 'password' => Hash::make('Carlitos123'),
                 'email_verified_at' => now(),
