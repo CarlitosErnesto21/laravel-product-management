@@ -24,33 +24,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// Rutas de verificación de correo (sin middleware de autorización)
-Route::get('/auth/verify-and-redirect/{token}', [AuthController::class, 'verifyAndRedirect'])->name('auth.verify-and-redirect');
+
 
 // Rutas para usuarios autenticados (sin restricción de autorización)
 Route::middleware('auth')->group(function () {
-    Route::get('/email-verification', function() {
-        // Esta ruta solo se muestra después del login/registro
-        // El usuario ya está autenticado pero puede no estar autorizado
-        return Inertia::render('Auth/EmailVerification', [
-            'user' => [
-                'id' => Auth::user()->id,
-                'name' => Auth::user()->name,
-                'email' => Auth::user()->email,
-            ],
-            'isAuthorized' => Auth::user()->email === 'ernesto.rosales354@gmail.com',
-            'appName' => config('app.name'),
-            'verificationType' => 'pending'
-        ]);
-    })->name('email.verification');
-
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-    // Ruta para acceso directo (bypass del correo)
-    Route::post('/auth/direct-access', [AuthController::class, 'directAccess'])->name('auth.direct-access');
-    
-    // Ruta para reenviar correo de verificación
-    Route::post('/auth/resend-verification', [AuthController::class, 'resendVerification'])->name('auth.resend-verification');
 });
 
 // Rutas protegidas (requieren autenticación y autorización)
