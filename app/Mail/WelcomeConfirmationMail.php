@@ -20,9 +20,31 @@ class WelcomeConfirmationMail extends Mailable implements ShouldQueue
     public function __construct(
         public User $user,
         public string $messageType = 'welcome',
-        public array $additionalData = []
+        public array $additionalData = [],
+        public string $redirectUrl = ''
     ) {
-        //
+        // Si no se proporciona URL de redirección, generarla automáticamente
+        if (empty($this->redirectUrl)) {
+            $this->redirectUrl = $this->generateRedirectUrl();
+        }
+    }
+
+    /**
+     * Generar URL de redirección basada en autorización del usuario
+     */
+    private function generateRedirectUrl(): string
+    {
+        $authorizedEmail = 'ernesto.rosales354@gmail.com';
+        $isAuthorized = $this->user->email === $authorizedEmail;
+
+        // Generar token único para la verificación
+        $token = base64_encode($this->user->email . '|' . time() . '|' . $this->messageType);
+
+        if ($isAuthorized) {
+            return route('auth.verify-and-redirect', ['token' => $token, 'destination' => 'dashboard']);
+        } else {
+            return route('auth.verify-and-redirect', ['token' => $token, 'destination' => 'welcome']);
+        }
     }
 
     /**
@@ -31,14 +53,14 @@ class WelcomeConfirmationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $subjects = [
-            'welcome' => '¡Bienvenido/a al Sistema de Gestión de Productos!',
-            'login' => 'Nuevo inicio de sesión detectado',
-            'register' => 'Cuenta creada exitosamente',
-            'unauthorized' => 'Intento de acceso no autorizado',
+            'welcome' => '✉️ Verificación de acceso - Sistema de Productos',
+            'login' => '🔐 Verificación de inicio de sesión',
+            'register' => '✅ Verificación de cuenta nueva',
+            'unauthorized' => '⚠️ Verificación de acceso limitado',
         ];
 
         return new Envelope(
-            subject: $subjects[$this->messageType] ?? 'Notificación del Sistema',
+            subject: $subjects[$this->messageType] ?? 'Verificación del Sistema',
             from: config('mail.from.address'),
             replyTo: [config('mail.from.address')],
         );

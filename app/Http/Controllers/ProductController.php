@@ -27,28 +27,7 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Probar conectividad con Cloudinary
-     */
-    public function testCloudinary()
-    {
-        try {
-            // Intentar obtener información básica de la cuenta
-            $result = $this->cloudinary->adminApi()->ping();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Conexión exitosa con Cloudinary',
-                'data' => $result
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error conectando con Cloudinary: ' . $e->getMessage(),
-                'error' => $e->getTraceAsString()
-            ]);
-        }
-    }
 
     /**
      * Subir imagen con fallback local si falla Cloudinary

@@ -42,17 +42,24 @@ class CheckAuthorizedUser
 
         // Si el usuario autenticado no es el autorizado, mostrar página de acceso restringido
         if (Auth::user()->email !== self::AUTHORIZED_EMAIL) {
-            // Enviar notificación de intento de acceso no autorizado
-            try {
-                $this->emailService->sendUnauthorizedAccessNotification(Auth::user(), [
-                    'attempted_action' => 'Acceso a ruta protegida: ' . $request->path(),
-                    'middleware_blocked' => true,
-                    'route_name' => $request->route()->getName(),
-                    'blocked_time' => now()->format('Y-m-d H:i:s'),
-                ]);
-            } catch (\Exception $e) {
-                Log::warning("No se pudo enviar notificación desde middleware: " . $e->getMessage());
-            }
+            // Enviar notificación de intento de acceso no autorizado (en background)
+            $user = Auth::user();
+            $routePath = $request->path();
+            $routeName = $request->route() ? $request->route()->getName() : null;
+
+            dispatch(function () use ($user, $routePath, $routeName) {
+                try {
+                    $emailService = new EmailService();
+                    $emailService->sendUnauthorizedAccessNotification($user, [
+                        'attempted_action' => 'Acceso a ruta protegida: ' . $routePath,
+                        'middleware_blocked' => true,
+                        'route_name' => $routeName,
+                        'blocked_time' => now()->format('Y-m-d H:i:s'),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::warning("No se pudo enviar notificación desde middleware: " . $e->getMessage());
+                }
+            })->afterResponse();
 
             return Inertia::render('Auth/Unauthorized');
         }

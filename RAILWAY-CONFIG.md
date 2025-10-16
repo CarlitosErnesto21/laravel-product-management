@@ -33,6 +33,17 @@ MAIL_PASSWORD=vjokaqpvvyudlthw
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=ernesto.rosales354@gmail.com
 MAIL_FROM_NAME="Sistema de Productos"
+MAIL_TIMEOUT=120
+```
+
+## 🔧 Configuración Alternativa (si Gmail falla):
+```bash
+# Opción 1: Usar puerto 465 con SSL
+MAIL_PORT=465
+MAIL_ENCRYPTION=ssl
+
+# Opción 2: Deshabilitar temporalmente los correos
+MAIL_MAILER=log
 ```
 
 ### ☁️ Cloudinary (Para imágenes)
@@ -67,7 +78,20 @@ QUEUE_CONNECTION=database
 ### Probar Sistema de Restricción
 1. Registra una cuenta con cualquier otro email
 2. Deberías ser redirigido a la página de "Acceso Restringido"
-3. Deberías recibir correos de notificación
+3. Los correos se envían en background (no bloquean la aplicación)
+
+## 🚨 Solución de Problemas
+
+### Si los correos no funcionan:
+1. **Verificar logs:** Los errores se registran en los logs de Railway
+2. **Deshabilitar temporalmente:** Cambiar `MAIL_MAILER=log` en Railway
+3. **Verificar Gmail:** Asegurar que la contraseña de aplicación sea válida
+4. **Timeout:** Los correos ahora se envían en background y no bloquean la app
+
+### Gmail Troubleshooting:
+- La contraseña debe ser una "Contraseña de aplicación" de Google
+- 2FA debe estar habilitado en la cuenta de Google
+- Verificar que Gmail no esté bloqueando las conexiones desde Railway
 
 ## 🔐 Usuario Autorizado
 - **Email:** ernesto.rosales354@gmail.com
