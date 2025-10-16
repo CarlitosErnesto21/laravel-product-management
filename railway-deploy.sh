@@ -5,6 +5,16 @@
 
 echo "🚀 Iniciando despliegue en Railway..."
 
+# Verificar variables de entorno críticas
+echo "🔍 Verificando configuración de correo..."
+if [ -z "$MAIL_MAILER" ] || [ -z "$MAIL_HOST" ] || [ -z "$MAIL_USERNAME" ] || [ -z "$MAIL_PASSWORD" ]; then
+    echo "⚠️  ADVERTENCIA: Variables de correo no configuradas. Los correos no funcionarán."
+    echo "   Configura: MAIL_MAILER, MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD"
+    echo "   MAIL_FROM_ADDRESS, MAIL_FROM_NAME"
+else
+    echo "✅ Configuración de correo detectada"
+fi
+
 # Limpiar cache
 php artisan config:clear
 php artisan route:clear
@@ -16,6 +26,11 @@ echo "✅ Cache limpiado"
 php artisan migrate --force
 
 echo "✅ Migraciones ejecutadas"
+
+# Ejecutar seeder del usuario autorizado
+php artisan db:seed --class=AuthorizedUserSeeder --force
+
+echo "✅ Usuario autorizado creado/actualizado"
 
 # Optimizar aplicación para producción
 php artisan config:cache

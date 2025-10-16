@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
+
+        // Registrar middleware personalizado
+        $middleware->alias([
+            'authorized' => \App\Http\Middleware\CheckAuthorizedUser::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

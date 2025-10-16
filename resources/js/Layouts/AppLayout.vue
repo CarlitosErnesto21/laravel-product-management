@@ -10,7 +10,7 @@
                             <span class="sm:hidden">Productos</span>
                         </Link>
 
-                        <div class="hidden md:flex ml-4 lg:ml-8 space-x-2 lg:space-x-4" v-if="$page.props.auth.user">
+                        <div class="hidden md:flex ml-4 lg:ml-8 space-x-2 lg:space-x-4" v-if="$page.props.auth.user && $page.props.auth.isAuthorizedUser">
                             <Link
                                 :href="route('dashboard')"
                                 class="text-gray-700 hover:text-blue-600 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors duration-200"
@@ -30,7 +30,7 @@
 
                     <div class="flex items-center space-x-2 sm:space-x-4">
                         <!-- Botón hamburguesa para móvil -->
-                        <div class="md:hidden" v-if="$page.props.auth.user">
+                        <div class="md:hidden" v-if="$page.props.auth.user && $page.props.auth.isAuthorizedUser">
                             <button
                                 @click="showMobileMenu = !showMobileMenu"
                                 class="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600 p-2"
@@ -56,7 +56,7 @@
                             </Link>
                         </div>
 
-                        <div v-else class="relative hidden md:block">
+                        <div v-else-if="$page.props.auth.isAuthorizedUser" class="relative hidden md:block">
                             <button
                                 @click="showUserMenu = !showUserMenu"
                                 class="flex items-center text-xs lg:text-sm text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600 transition-colors duration-200"
@@ -91,11 +91,24 @@
                                 </Link>
                             </div>
                         </div>
+
+                        <!-- Menú simplificado para usuarios no autorizados -->
+                        <div v-else-if="$page.props.auth.user && !$page.props.auth.isAuthorizedUser" class="hidden md:block">
+                            <Link
+                                :href="route('logout')"
+                                method="post"
+                                as="button"
+                                class="text-red-600 hover:text-red-700 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                            >
+                                <font-awesome-icon icon="sign-out-alt" class="w-4 h-4 mr-2" />
+                                Cerrar Sesión
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Menú móvil -->
-                <div v-if="$page.props.auth.user" class="md:hidden" v-show="showMobileMenu">
+                <!-- Menú móvil para usuarios autorizados -->
+                <div v-if="$page.props.auth.user && $page.props.auth.isAuthorizedUser" class="md:hidden" v-show="showMobileMenu">
                     <div class="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200">
                         <Link
                             :href="route('dashboard')"
@@ -134,6 +147,31 @@
                             >
                                 <font-awesome-icon icon="sign-out-alt" class="w-4 h-4 mr-2" />
                                 Cerrar Sesión
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Menú móvil simplificado para usuarios no autorizados -->
+                <div v-else-if="$page.props.auth.user && !$page.props.auth.isAuthorizedUser" class="md:hidden">
+                    <div class="px-2 pt-2 pb-3 border-t border-gray-200">
+                        <div class="flex items-center justify-between px-3 py-2">
+                            <div class="flex items-center">
+                                <div class="bg-yellow-100 rounded-full p-2 mr-3">
+                                    <font-awesome-icon icon="user" class="w-4 h-4 text-yellow-600" />
+                                </div>
+                                <div class="text-sm">
+                                    <div class="font-medium text-gray-900 truncate">{{ $page.props.auth.user.name }}</div>
+                                    <div class="text-yellow-600 text-xs truncate">Acceso Restringido</div>
+                                </div>
+                            </div>
+                            <Link
+                                :href="route('logout')"
+                                method="post"
+                                as="button"
+                                class="text-red-600 hover:text-red-700 px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200"
+                            >
+                                <font-awesome-icon icon="sign-out-alt" class="w-4 h-4" />
                             </Link>
                         </div>
                     </div>
