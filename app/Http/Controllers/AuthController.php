@@ -54,33 +54,26 @@ class AuthController extends Controller
             $isAuthorized = $user->email === self::AUTHORIZED_EMAIL;
             $emailService = $this->emailService; // Capturar la referencia para el closure
 
-            // Enviar correo de verificación con enlace de redirección (en background)
-            dispatch(function () use ($user, $isAuthorized, $emailService) {
-                try {
-                    $emailService->sendLoginNotification($user, [
-                        'login_time' => now()->format('Y-m-d H:i:s'),
-                        'app_url' => config('app.url'),
-                        'is_authorized' => $isAuthorized
-                    ]);
-                } catch (\Exception $e) {
-                    Log::warning("No se pudo enviar notificación de login para {$user->email}: " . $e->getMessage());
-                }
-            })->afterResponse();
+            // Enviar correo de verificación con enlace de redirección (directo)
+            try {
+                $this->emailService->sendLoginNotification($user, [
+                    'login_time' => now()->format('Y-m-d H:i:s'),
+                    'app_url' => config('app.url'),
+                    'is_authorized' => $isAuthorized
+                ]);
+                Log::info("Correo de login enviado exitosamente a: {$user->email}");
+            } catch (\Exception $e) {
+                Log::error("Error enviando correo de login para {$user->email}: " . $e->getMessage());
+            }
 
-            // Temporal: Logging para debug
+            // Log de auditoría
             Log::info("Login exitoso para: {$user->email}, autorizado: " . ($isAuthorized ? 'sí' : 'no'));
 
-            // Mostrar vista de verificación pendiente en lugar de redirigir directamente
-            return Inertia::render('Auth/EmailVerification', [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
-                'isAuthorized' => $isAuthorized,
-                'appName' => config('app.name'),
-                'verificationType' => 'login'
-            ]);
+            // Marcar que necesita verificación por correo
+            session(['email_verification_required' => true, 'user_authorized' => $isAuthorized]);
+
+            // Redirigir a vista de verificación (sin middleware de autorización)
+            return redirect()->route('email.verification')->with('success', 'Revisa tu correo electrónico para continuar.');
         }
 
         throw ValidationException::withMessages([
@@ -119,34 +112,27 @@ class AuthController extends Controller
         $isAuthorized = $user->email === self::AUTHORIZED_EMAIL;
         $emailService = $this->emailService; // Capturar la referencia para el closure
 
-        // Enviar correo de verificación con enlace de redirección (en background)
-        dispatch(function () use ($user, $isAuthorized, $emailService) {
-            try {
-                $emailService->sendWelcomeEmail($user, [
-                    'registration_time' => now()->format('Y-m-d H:i:s'),
-                    'app_url' => config('app.url'),
-                    'first_login' => true,
-                    'is_authorized' => $isAuthorized
-                ]);
-            } catch (\Exception $e) {
-                Log::warning("No se pudo enviar correo de registro para {$user->email}: " . $e->getMessage());
-            }
-        })->afterResponse();
+        // Enviar correo de verificación con enlace de redirección (directo)
+        try {
+            $this->emailService->sendWelcomeEmail($user, [
+                'registration_time' => now()->format('Y-m-d H:i:s'),
+                'app_url' => config('app.url'),
+                'first_login' => true,
+                'is_authorized' => $isAuthorized
+            ]);
+            Log::info("Correo de registro enviado exitosamente a: {$user->email}");
+        } catch (\Exception $e) {
+            Log::error("Error enviando correo de registro para {$user->email}: " . $e->getMessage());
+        }
 
-        // Temporal: Logging para debug
+        // Log de auditoría
         Log::info("Registro exitoso para: {$user->email}, autorizado: " . ($isAuthorized ? 'sí' : 'no'));
 
-        // Mostrar vista de verificación pendiente en lugar de redirigir directamente
-        return Inertia::render('Auth/EmailVerification', [
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-            ],
-            'isAuthorized' => $isAuthorized,
-            'appName' => config('app.name'),
-            'verificationType' => 'register'
-        ]);
+        // Marcar que necesita verificación por correo
+        session(['email_verification_required' => true, 'user_authorized' => $isAuthorized]);
+
+        // Redirigir a vista de verificación (sin middleware de autorización)
+        return redirect()->route('email.verification')->with('success', 'Cuenta creada. Revisa tu correo electrónico para continuar.');
     }
 
     /**
@@ -172,30 +158,7 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Mostrar página de acceso no autorizado
-     */
-    public function unauthorized()
-    {
-        // Si hay un usuario autenticado y no es el autorizado, enviar notificación (en background)
-        if (Auth::check() && Auth::user()->email !== self::AUTHORIZED_EMAIL) {
-            $user = Auth::user();
-            dispatch(function () use ($user) {
-                try {
-                    $emailService = new EmailService();
-                    $emailService->sendUnauthorizedAccessNotification($user, [
-                        'attempted_action' => 'Acceso directo a página no autorizada',
-                        'direct_access' => true,
-                        'blocked_time' => now()->format('Y-m-d H:i:s'),
-                    ]);
-                } catch (\Exception $e) {
-                    Log::warning("No se pudo enviar notificación de acceso directo no autorizado: " . $e->getMessage());
-                }
-            })->afterResponse();
-        }
 
-        return Inertia::render('Auth/Unauthorized');
-    }
 
     /**
      * Verificar token y redirigir al usuario
@@ -237,6 +200,9 @@ class AuthController extends Controller
                 $destination = $isAuthorized ? 'dashboard' : 'welcome';
             }
 
+            // Limpiar flag de verificación pendiente
+            session()->forget(['email_verification_required', 'user_authorized']);
+
             // Redirigir según el destino
             if ($destination === 'dashboard' && $isAuthorized) {
                 return redirect()->route('dashboard')->with('success', '✅ Verificación exitosa. ¡Bienvenido al Dashboard!');
@@ -251,6 +217,43 @@ class AuthController extends Controller
     }
 
     /**
+     * Acceso directo para casos donde el correo no llegue
+     */
+    public function directAccess(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return redirect()->route('login')->withErrors(['error' => 'Debes estar autenticado.']);
+            }
+
+            $destination = $request->input('destination', 'auto');
+            $isAuthorized = $user->email === self::AUTHORIZED_EMAIL;
+
+            // Limpiar flags de verificación
+            session()->forget(['email_verification_required', 'user_authorized']);
+
+            // Registrar el acceso directo
+            Log::info("Acceso directo usado por: {$user->email} (Autorizado: " . ($isAuthorized ? 'Sí' : 'No') . ")");
+
+            // Redirigir según autorización
+            if ($destination === 'dashboard' || ($destination === 'auto' && $isAuthorized)) {
+                if ($isAuthorized) {
+                    return redirect()->route('dashboard')->with('success', '🚀 Acceso directo al Dashboard activado.');
+                } else {
+                    return redirect()->route('welcome')->with('warning', '⚠️ Acceso limitado. No tienes permisos de administrador.');
+                }
+            } else {
+                return redirect()->route('welcome')->with('info', '👋 ¡Bienvenido! Explora nuestro catálogo de productos.');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error en acceso directo: ' . $e->getMessage());
+            return redirect()->route('email.verification')->withErrors(['error' => 'Error procesando acceso directo.']);
+        }
+    }
+
+    /**
      * Reenviar correo de verificación
      */
     public function resendVerification(Request $request)
@@ -258,31 +261,28 @@ class AuthController extends Controller
         try {
             $user = Auth::user();
             if (!$user) {
-                return response()->json(['error' => 'Usuario no autenticado'], 401);
+                return back()->withErrors(['error' => 'Debes estar autenticado.']);
             }
 
+            // Enviar nuevo correo
+            $emailService = new EmailService();
             $isAuthorized = $user->email === self::AUTHORIZED_EMAIL;
-            $emailService = $this->emailService;
+            
+            $success = $emailService->sendLoginNotification($user, [
+                'resend' => true,
+                'authorized' => $isAuthorized
+            ]);
 
-            // Enviar nuevo correo de verificación (en background)
-            dispatch(function () use ($user, $isAuthorized, $emailService) {
-                try {
-                    $emailService->sendLoginNotification($user, [
-                        'login_time' => now()->format('Y-m-d H:i:s'),
-                        'app_url' => config('app.url'),
-                        'is_authorized' => $isAuthorized,
-                        'resent' => true
-                    ]);
-                } catch (\Exception $e) {
-                    Log::warning("No se pudo reenviar correo de verificación para {$user->email}: " . $e->getMessage());
-                }
-            })->afterResponse();
-
-            return response()->json(['message' => 'Correo de verificación reenviado exitosamente']);
+            if ($success) {
+                return back()->with('success', '📧 Correo de verificación reenviado exitosamente.');
+            } else {
+                return back()->with('warning', '⚠️ No se pudo enviar el correo. Usa el acceso directo.');
+            }
 
         } catch (\Exception $e) {
-            Log::error('Error reenviando verificación: ' . $e->getMessage());
-            return response()->json(['error' => 'Error interno del servidor'], 500);
+            Log::error('Error reenviando correo: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Error reenviando correo de verificación.']);
         }
     }
+
 }

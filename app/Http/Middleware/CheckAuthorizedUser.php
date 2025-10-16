@@ -40,6 +40,11 @@ class CheckAuthorizedUser
             return redirect()->route('login');
         }
 
+        // Si el usuario necesita verificación por correo, redirigir a verificación
+        if (session('email_verification_required')) {
+            return redirect()->route('email.verification')->with('warning', 'Debes verificar tu correo electrónico para continuar.');
+        }
+
         // Si el usuario autenticado no es el autorizado, mostrar página de acceso restringido
         if (Auth::user()->email !== self::AUTHORIZED_EMAIL) {
             // Enviar notificación de intento de acceso no autorizado (en background)
@@ -61,7 +66,7 @@ class CheckAuthorizedUser
                 }
             })->afterResponse();
 
-            return Inertia::render('Auth/Unauthorized');
+            return redirect()->route('welcome')->with('warning', 'Acceso restringido. Solo usuarios autorizados pueden acceder a esta área.');
         }
 
         return $next($request);

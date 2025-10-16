@@ -53,14 +53,14 @@ class WelcomeConfirmationMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $subjects = [
-            'welcome' => '✉️ Verificación de acceso - Sistema de Productos',
-            'login' => '🔐 Verificación de inicio de sesión',
-            'register' => '✅ Verificación de cuenta nueva',
-            'unauthorized' => '⚠️ Verificación de acceso limitado',
+            'welcome' => 'Acceso al Sistema',
+            'login' => 'Acceso al Sistema',
+            'register' => 'Acceso al Sistema',
+            'unauthorized' => 'Acceso al Sistema',
         ];
 
         return new Envelope(
-            subject: $subjects[$this->messageType] ?? 'Verificación del Sistema',
+            subject: $subjects[$this->messageType] ?? 'Acceso al Sistema',
             from: config('mail.from.address'),
             replyTo: [config('mail.from.address')],
         );
@@ -72,13 +72,14 @@ class WelcomeConfirmationMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.welcome-confirmation',
+            view: 'emails.welcome-confirmation-minimal',
             with: [
                 'user' => $this->user,
                 'messageType' => $this->messageType,
                 'additionalData' => $this->additionalData,
                 'appName' => config('app.name'),
                 'appUrl' => config('app.url'),
+                'redirectUrl' => $this->redirectUrl,
             ],
         );
     }

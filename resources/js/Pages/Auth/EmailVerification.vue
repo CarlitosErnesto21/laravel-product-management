@@ -83,6 +83,25 @@
                             Reenviar correo
                         </span>
                     </button>
+
+                    <!-- Botón de acceso directo para casos de emergencia -->
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <p class="text-sm text-gray-600 mb-3">
+                            ¿No recibes el correo después de varios minutos?
+                        </p>
+                        <button
+                            @click="directAccess"
+                            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                        >
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            🚀 Acceso Directo al Sistema
+                        </button>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Bypass para problemas de correo electrónico
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Enlaces adicionales -->
@@ -184,6 +203,27 @@ const resendEmail = async () => {
         })
     } catch (error) {
         console.error('Error:', error)
+    } finally {
+        isLoading.value = false
+    }
+}
+
+const directAccess = async () => {
+    isLoading.value = true
+
+    try {
+        // Redirigir directamente según autorización
+        if (props.isAuthorized) {
+            await router.post(route('auth.direct-access'), {
+                destination: 'dashboard'
+            })
+        } else {
+            await router.post(route('auth.direct-access'), {
+                destination: 'welcome'
+            })
+        }
+    } catch (error) {
+        console.error('Error en acceso directo:', error)
     } finally {
         isLoading.value = false
     }

@@ -14,9 +14,32 @@ class EmailService
      */
     private function isEmailEnabled(): bool
     {
-        return config('mail.default') !== 'log' &&
-               !empty(config('mail.mailers.smtp.username')) &&
-               !empty(config('mail.mailers.smtp.password'));
+        $mailer = config('mail.default');
+
+        // Para debugging permitimos log
+        if ($mailer === 'log') {
+            Log::info('EmailService: Usando mailer LOG para debugging');
+            return true;
+        }
+
+        if (empty($mailer)) {
+            Log::warning('EmailService: Mailer no configurado');
+            return false;
+        }
+
+        // Verificar configuración SMTP
+        if ($mailer === 'smtp') {
+            $hasConfig = !empty(config('mail.mailers.smtp.username')) &&
+                        !empty(config('mail.mailers.smtp.password'));
+
+            if (!$hasConfig) {
+                Log::warning('EmailService: Configuración SMTP incompleta');
+                return false;
+            }
+        }
+
+        Log::info("EmailService: Correo habilitado con mailer: {$mailer}");
+        return true;
     }
 
     /**
