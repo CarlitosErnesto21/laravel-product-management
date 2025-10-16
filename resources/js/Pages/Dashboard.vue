@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="p-4 sm:p-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                         <!-- Tarjeta de Productos -->
                         <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 sm:p-6 text-white">
                             <div class="flex items-center justify-between">
@@ -74,6 +74,27 @@
                             </div>
                         </div>
 
+                        <!-- Tarjeta de Vista Pública -->
+                        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg p-4 sm:p-6 text-white">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-base sm:text-lg font-semibold">Vista Pública</h3>
+                                    <p class="text-emerald-100 mt-1 text-xs sm:text-sm">Ver como visitante</p>
+                                </div>
+                                <div class="bg-emerald-700 bg-opacity-20 rounded-full p-2 sm:p-3">
+                                    <font-awesome-icon icon="home" class="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                                </div>
+                            </div>
+                            <div class="mt-3 sm:mt-4">
+                                <Link :href="route('welcome')"
+                                      class="inline-flex items-center px-3 sm:px-4 py-2 bg-emerald-700 bg-opacity-20 rounded-lg hover:bg-opacity-30 transition-colors duration-200 text-xs sm:text-sm">
+                                    <span class="hidden sm:inline">Ver Página Principal</span>
+                                    <span class="sm:hidden">Ver Página</span>
+                                    <font-awesome-icon icon="external-link-alt" class="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4" />
+                                </Link>
+                            </div>
+                        </div>
+
                         <!-- Tarjeta de Perfil -->
                         <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 sm:p-6 text-white">
                             <div class="flex items-center justify-between">
@@ -96,7 +117,7 @@
                     <!-- Acciones rápidas -->
                     <div class="mt-6 sm:mt-8">
                         <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">Acciones Rápidas</h2>
-                        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                             <Link :href="route('products.index')"
                                   class="p-3 sm:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-center">
                                 <div class="text-gray-600 mb-1 sm:mb-2">
@@ -116,6 +137,17 @@
                                 <p class="text-xs sm:text-sm font-medium text-gray-900">
                                     <span class="hidden sm:inline">Agregar Producto</span>
                                     <span class="sm:hidden">Agregar</span>
+                                </p>
+                            </Link>
+
+                            <Link :href="route('welcome')"
+                                  class="p-3 sm:p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors duration-200 text-center border border-emerald-200">
+                                <div class="text-emerald-600 mb-1 sm:mb-2">
+                                    <font-awesome-icon icon="home" class="w-6 h-6 sm:w-8 sm:h-8 mx-auto" />
+                                </div>
+                                <p class="text-xs sm:text-sm font-medium text-emerald-700">
+                                    <span class="hidden sm:inline">Vista Pública</span>
+                                    <span class="sm:hidden">Público</span>
                                 </p>
                             </Link>
 

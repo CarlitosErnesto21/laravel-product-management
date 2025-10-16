@@ -25,6 +25,15 @@
                             >
                                 Productos
                             </Link>
+                            <Link
+                                :href="route('welcome')"
+                                class="text-gray-700 hover:text-green-600 px-2 lg:px-3 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors duration-200 border border-gray-300 hover:border-green-500"
+                                :class="{ 'text-green-600 font-semibold border-green-500': route().current('welcome') }"
+                            >
+                                <font-awesome-icon icon="home" class="w-3 h-3 mr-1" />
+                                <span class="hidden lg:inline">Vista Pública</span>
+                                <span class="lg:hidden">Público</span>
+                            </Link>
                         </div>
                     </div>
 
@@ -81,6 +90,14 @@
                                     Dashboard
                                 </Link>
                                 <Link
+                                    :href="route('welcome')"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-100 transition-colors duration-200"
+                                >
+                                    <font-awesome-icon icon="home" class="w-4 h-4 mr-2 text-green-600" />
+                                    Vista Pública
+                                </Link>
+                                <div class="border-t border-gray-200 my-1"></div>
+                                <Link
                                     :href="route('logout')"
                                     method="post"
                                     as="button"
@@ -127,6 +144,15 @@
                         >
                             <font-awesome-icon icon="box" class="w-4 h-4 mr-2" />
                             Productos
+                        </Link>
+                        <Link
+                            :href="route('welcome')"
+                            class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors duration-200 border-l-4 border-transparent hover:border-green-500"
+                            :class="{ 'text-green-600 bg-green-50 border-green-500': route().current('welcome') }"
+                            @click="showMobileMenu = false"
+                        >
+                            <font-awesome-icon icon="home" class="w-4 h-4 mr-2" />
+                            Vista Pública
                         </Link>
                         <div class="border-t border-gray-200 pt-2 mt-2">
                             <div class="flex items-center px-3 py-2">
