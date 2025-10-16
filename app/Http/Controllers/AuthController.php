@@ -67,9 +67,16 @@ class AuthController extends Controller
                 }
             })->afterResponse();
 
+            // Temporal: Logging para debug
+            Log::info("Login exitoso para: {$user->email}, autorizado: " . ($isAuthorized ? 'sí' : 'no'));
+
             // Mostrar vista de verificación pendiente en lugar de redirigir directamente
             return Inertia::render('Auth/EmailVerification', [
-                'user' => $user,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
                 'isAuthorized' => $isAuthorized,
                 'appName' => config('app.name'),
                 'verificationType' => 'login'
@@ -126,9 +133,16 @@ class AuthController extends Controller
             }
         })->afterResponse();
 
+        // Temporal: Logging para debug
+        Log::info("Registro exitoso para: {$user->email}, autorizado: " . ($isAuthorized ? 'sí' : 'no'));
+
         // Mostrar vista de verificación pendiente en lugar de redirigir directamente
         return Inertia::render('Auth/EmailVerification', [
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
             'isAuthorized' => $isAuthorized,
             'appName' => config('app.name'),
             'verificationType' => 'register'
