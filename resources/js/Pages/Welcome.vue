@@ -44,7 +44,7 @@
                 <div v-else-if="$page.props.auth.user && !$page.props.auth.isAuthorizedUser" class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-md sm:max-w-none mx-auto px-4 sm:px-0">
                     <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-3 rounded-lg text-center">
                         <p class="font-medium">Acceso Restringido</p>
-                        <p class="text-sm mt-1">¡Ups! No tienes permiso para acceder a esta sección.</p>
+                        <p class="text-sm mt-1">Ningún usuario tiene permiso para gestionar los productos.</p>
                     </div>
                 </div>
             </div>
