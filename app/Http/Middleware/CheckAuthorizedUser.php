@@ -12,7 +12,7 @@ class CheckAuthorizedUser
     /**
      * Email del usuario autorizado
      */
-    const AUTHORIZED_EMAIL = 'ernesto.rosales354@gmail.com';
+    const AUTHORIZED_EMAIL = 'ernesto@gmail.com';
 
     /**
      * Handle an incoming request.
