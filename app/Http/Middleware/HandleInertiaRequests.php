@@ -39,7 +39,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                'isAuthorizedUser' => $request->user() && $request->user()->email === 'ernesto@gmail.com',
+                'isAuthorizedUser' => $request->user() && $request->user()->email === 'carlhos21.e@gmail.com',
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
